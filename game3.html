@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>그림자 사냥꾼</title>
+<style>
+body{margin:0;background:#030405;color:white;font-family:Arial;text-align:center}
+canvas{width:min(94vw,800px);background:#090b0f;border:1px solid #343434;border-radius:15px}
+</style>
+</head>
+<body>
+<h1>그림자 사냥꾼 · SHADOW HUNTER</h1>
+<p>어두운 곳에서는 안전합니다. 빛에 오래 있으면 잡힙니다.</p>
+<canvas id="c" width="800" height="500"></canvas>
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d");
+let p={x:100,y:250},e={x:700,y:250},k={},score=0,dead=0;
+onkeydown=a=>k[a.key.toLowerCase()]=1;
+onkeyup=a=>k[a.key.toLowerCase()]=0;
+function loop(){
+ if(dead)return;
+ x.fillStyle="#07090c";x.fillRect(0,0,800,500);
+
+ let dx=(k.d||k.arrowright)-(k.a||k.arrowleft);
+ let dy=(k.s||k.arrowdown)-(k.w||k.arrowup);
+ let l=Math.hypot(dx,dy)||1;
+ p.x+=dx/l*3;p.y+=dy/l*3;
+ p.x=Math.max(12,Math.min(788,p.x));p.y=Math.max(12,Math.min(488,p.y));
+
+ e.x+=(p.x-e.x)*.0015;
+ e.y+=(p.y-e.y)*.0015;
+
+ let light=250+Math.sin(Date.now()*.002)*180;
+ let dist=Math.hypot(p.x-400,p.y-250);
+
+ x.fillStyle="#202020";
+ x.beginPath();x.arc(400,250,light,0,7);x.fill();
+
+ x.globalCompositeOperation="destination-out";
+ x.beginPath();x.arc(400,250,light*.72,0,7);x.fill();
+ x.globalCompositeOperation="source-over";
+
+ x.fillStyle="#ff426d";x.beginPath();x.arc(e.x,e.y,14,0,7);x.fill();
+
+ x.fillStyle="#55e6ff";x.beginPath();x.arc(p.x,p.y,11,0,7);x.fill();
+
+ if(Math.hypot(p.x-e.x,p.y-e.y)<25){dead=1;alert("GAME OVER")}
+ if(dist>light*.65)score++;
+ x.fillStyle="white";x.font="bold 20px Arial";x.fillText("SCORE "+score,20,30);
+ requestAnimationFrame(loop)
+}
+loop();
+</script>
+</body>
+</html>

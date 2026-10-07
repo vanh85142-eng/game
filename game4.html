@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>컬러 바이러스</title>
+<style>
+body{margin:0;background:#090b13;color:white;font-family:Arial;text-align:center}
+#board{display:grid;grid-template-columns:repeat(8,45px);gap:5px;justify-content:center;margin:25px auto}
+.cell{width:45px;height:45px;border-radius:9px;cursor:pointer}
+button{padding:11px 20px;border:0;border-radius:9px}
+</style>
+</head>
+<body>
+<h1>컬러 바이러스 · COLOR VIRUS</h1>
+<p>같은 색 3개 이상을 연결하세요.</p>
+<div id="board"></div>
+<h2 id="score">SCORE 0</h2>
+<button onclick="newGame()">RESTART</button>
+<script>
+const board=document.getElementById("board");
+const colors=["#ff476f","#4ddcff","#ffd447","#9d65ff"];
+let a=[],score=0;
+function newGame(){
+ score=0;a=[];
+ for(let i=0;i<64;i++)a.push(Math.floor(Math.random()*4));
+ draw()
+}
+function draw(){
+ board.innerHTML="";
+ a.forEach((v,i)=>{
+  let d=document.createElement("div");
+  d.className="cell";d.style.background=colors[v];
+  d.onclick=()=>click(i);
+  board.appendChild(d)
+ });
+ document.getElementById("score").textContent="SCORE "+score
+}
+function click(i){
+ let color=a[i],seen=new Set(),q=[i];
+ while(q.length){
+  let n=q.pop();
+  if(seen.has(n)||a[n]!==color)continue;
+  seen.add(n);
+  let r=Math.floor(n/8),c=n%8;
+  if(r)q.push(n-8);
+  if(r<7)q.push(n+8);
+  if(c)q.push(n-1);
+  if(c<7)q.push(n+1)
+ }
+ if(seen.size<3)return;
+ seen.forEach(n=>a[n]=-1);
+ score+=seen.size*10;
+ for(let col=0;col<8;col++){
+  let vals=[];
+  for(let row=7;row>=0;row--){
+   let v=a[row*8+col];
+   if(v>=0)vals.push(v)
+  }
+  for(let row=7;row>=0;row--)a[row*8+col]=vals[7-row]??Math.floor(Math.random()*4)
+ }
+ draw()
+}
+newGame();
+</script>
+</body>
+</html>

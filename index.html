@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MINI GAME LAB</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  padding:25px;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+  background:
+    radial-gradient(
+      circle at 50% 10%,
+      #202d58 0%,
+      #080b15 60%,
+      #03050a 100%
+    );
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+main{
+  width:min(900px,100%);
+}
+
+h1{
+  margin:0;
+  text-align:center;
+  font-size:clamp(36px,8vw,70px);
+  font-weight:900;
+  letter-spacing:-2px;
+}
+
+.subtitle{
+  margin:8px 0 32px;
+  text-align:center;
+  color:#8f9fc5;
+  font-size:14px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+
+.card{
+  display:block;
+  padding:25px;
+  color:#fff;
+  text-decoration:none;
+  border:1px solid #354263;
+  border-radius:18px;
+  background:rgba(20,27,50,.88);
+  transition:
+    transform .2s,
+    background .2s,
+    border-color .2s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+  background:#26335a;
+  border-color:#8eaaff;
+}
+
+.icon{
+  font-size:44px;
+  margin-bottom:8px;
+}
+
+.card h2{
+  margin:0 0 7px;
+  font-size:23px;
+}
+
+.card p{
+  margin:0;
+  color:#9eacd0;
+  line-height:1.5;
+  font-size:14px;
+}
+
+.file{
+  display:inline-block;
+  margin-top:15px;
+  padding:5px 9px;
+  border-radius:6px;
+  background:#10172a;
+  color:#7384aa;
+  font-size:11px;
+}
+
+.footer{
+  margin-top:25px;
+  text-align:center;
+  color:#4e5c7c;
+  font-size:11px;
+}
+
+@media(max-width:600px){
+
+  body{
+    padding:15px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .card{
+    padding:20px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<main>
+
+  <h1>MINI GAME LAB</h1>
+
+  <div class="subtitle">
+    6 UNIQUE ONE-FILE GAMES · 6개의 독특한 게임
+  </div>
+
+
+  <div class="grid">
+
+    <!-- GAME 1 -->
+
+    <a class="card" href="game1.html">
+
+      <div class="icon">⏳</div>
+
+      <h2>
+        시간 도둑 · TIME THIEF
+      </h2>
+
+      <p>
+        과거의 내가 적이 됩니다.
+        당신이 움직인 기록이 유령이 되어
+        당신을 쫓아옵니다.
+      </p>
+
+      <span class="file">
+        game1.html
+      </span>
+
+    </a>
+
+
+    <!-- GAME 2 -->
+
+    <a class="card" href="game2.html">
+
+      <div class="icon">🌀</div>
+
+      <h2>
+        중력 스위치 · GRAVITY SWITCH
+      </h2>
+
+      <p>
+        중력을 뒤집으며 장애물을 피하세요.
+        언제든 위와 아래가 바뀝니다.
+      </p>
+
+      <span class="file">
+        game2.html
+      </span>
+
+    </a>
+
+
+    <!-- GAME 3 -->
+
+    <a class="card" href="game3.html">
+
+      <div class="icon">🌑</div>
+
+      <h2>
+        그림자 사냥꾼 · SHADOW HUNTER
+      </h2>
+
+      <p>
+        빛에 오래 노출되면 위험합니다.
+        어둠 속에서 적을 피해 살아남으세요.
+      </p>
+
+      <span class="file">
+        game3.html
+      </span>
+
+    </a>
+
+
+    <!-- GAME 4 -->
+
+    <a class="card" href="game4.html">
+
+      <div class="icon">🧬</div>
+
+      <h2>
+        컬러 바이러스 · COLOR VIRUS
+      </h2>
+
+      <p>
+        같은 색을 연결해서
+        바이러스를 제거하세요.
+      </p>
+
+      <span class="file">
+        game4.html
+      </span>
+
+    </a>
+
+
+    <!-- GAME 5 -->
+
+    <a class="card" href="game5.html">
+
+      <div class="icon">⏱️</div>
+
+      <h2>
+        제로 세컨드 · ZERO SECOND
+      </h2>
+
+      <p>
+        시간을 멈추는 능력을 사용해서
+        적을 피하고 점수를 얻으세요.
+      </p>
+
+      <span class="file">
+        game5.html
+      </span>
+
+    </a>
+
+
+    <!-- GAME 6 -->
+
+    <a class="card" href="game6.html">
+
+      <div class="icon">🧠</div>
+
+      <h2>
+        기억 미로 · MEMORY MAZE
+      </h2>
+
+      <p>
+        잠깐 나타난 미로를 기억하고
+        보이지 않는 길을 통과하세요.
+      </p>
+
+      <span class="file">
+        game6.html
+      </span>
+
+    </a>
+
+  </div>
+
+
+  <div class="footer">
+    ONE FILE GAMES · HTML · CSS · JAVASCRIPT
+  </div>
+
+</main>
+
+</body>
+</html>

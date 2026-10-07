@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>제로 세컨드</title>
+<style>
+body{margin:0;background:#050508;color:white;font-family:Arial;text-align:center}
+canvas{width:min(94vw,800px);border:1px solid #333;border-radius:15px;background:#08080c}
+</style>
+</head>
+<body>
+<h1>제로 세컨드 · ZERO SECOND</h1>
+<p>SPACE를 누르면 시간이 멈춥니다. 멈춘 동안 적을 피하세요.</p>
+<canvas id="c" width="800" height="500"></canvas>
+<script>
+const c=document.getElementById("c"),x=c.getContext("2d");
+let p={x:400,y:400},en=[],k={},freeze=false,score=0,last=0;
+for(let i=0;i<8;i++)en.push({x:Math.random()*800,y:Math.random()*300,v:1+Math.random()*2});
+onkeydown=e=>{k[e.key.toLowerCase()]=1;if(e.code==="Space")freeze=!freeze};
+onkeyup=e=>k[e.key.toLowerCase()]=0;
+function loop(t){
+ let dt=Math.min(.03,(t-last)/1000);last=t;
+ x.fillStyle="#08080c";x.fillRect(0,0,800,500);
+ let dx=(k.d||k.arrowright)-(k.a||k.arrowleft);
+ let dy=(k.s||k.arrowdown)-(k.w||k.arrowup);
+ let l=Math.hypot(dx,dy)||1;
+ p.x+=dx/l*220*dt;p.y+=dy/l*220*dt;
+ p.x=Math.max(10,Math.min(790,p.x));p.y=Math.max(10,Math.min(490,p.y));
+ if(!freeze){
+  en.forEach(e=>{e.x+=(p.x-e.x)*.001*e.v;e.y+=(p.y-e.y)*.001*e.v});
+  score+=dt;
+ }
+ en.forEach(e=>{
+  x.fillStyle="#ff3e67";x.beginPath();x.arc(e.x,e.y,12,0,7);x.fill();
+  if(Math.hypot(p.x-e.x,p.y-e.y)<22){alert("TIME OVER\nSCORE "+score.toFixed(0));location.reload()}
+ });
+ x.fillStyle="#55e7ff";x.beginPath();x.arc(p.x,p.y,12,0,7);x.fill();
+ x.fillStyle=freeze?"#ffe45c":"white";
+ x.font="bold 20px Arial";
+ x.fillText(freeze?"TIME STOPPED":"TIME RUNNING",20,30);
+ requestAnimationFrame(loop)
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

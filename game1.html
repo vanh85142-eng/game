@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시간 도둑 | Time Thief</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% 20%, #17254d 0%, #080b16 55%, #03050a 100%);
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.game {
+  width: min(94vw, 820px);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: clamp(24px, 5vw, 38px);
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.subtitle {
+  color: #7e91bd;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.stats {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  min-width: 72px;
+  padding: 8px 11px;
+  border: 1px solid #273452;
+  border-radius: 10px;
+  background: rgba(15, 23, 43, .8);
+  text-align: center;
+}
+
+.stat-label {
+  color: #7586aa;
+  font-size: 10px;
+}
+
+.stat-value {
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.board-wrap {
+  position: relative;
+  border: 1px solid #263452;
+  border-radius: 18px;
+  padding: 8px;
+  background: #070b15;
+  box-shadow:
+    0 20px 70px rgba(0,0,0,.45),
+    inset 0 0 50px rgba(35,70,130,.08);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+  background: #050810;
+  touch-action: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 8px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(3, 6, 13, .72);
+  backdrop-filter: blur(5px);
+  text-align: center;
+  padding: 25px;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.panel {
+  max-width: 440px;
+}
+
+.panel h1 {
+  margin: 0 0 8px;
+  font-size: clamp(32px, 8vw, 58px);
+}
+
+.panel p {
+  color: #9caed1;
+  line-height: 1.6;
+  margin: 8px 0;
+}
+
+.panel .danger {
+  color: #c58cff;
+}
+
+button {
+  margin-top: 16px;
+  padding: 13px 25px;
+  border: 0;
+  border-radius: 11px;
+  background: #ffe16b;
+  color: #171304;
+  font-weight: 900;
+  font-size: 15px;
+  cursor: pointer;
+  transition: .15s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.controls {
+  margin-top: 10px;
+  text-align: center;
+  color: #7283a6;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.controls b {
+  color: #aab9d8;
+}
+
+.footer {
+  margin-top: 7px;
+  display: flex;
+  justify-content: space-between;
+  color: #455474;
+  font-size: 10px;
+}
+
+@media (max-width: 600px) {
+  .header {
+    align-items: flex-start;
+  }
+
+  .stats {
+    width: 100%;
+  }
+
+  .stat {
+    flex: 1;
+  }
+
+  .controls {
+    font-size: 11px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+  <div class="header">
+    <div>
+      <div class="title">시간 도둑</div>
+      <div class="subtitle">TIME THIEF</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">SCORE</div>
+        <div class="stat-value" id="score">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">TIME</div>
+        <div class="stat-value" id="time">0.0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">GHOSTS</div>
+        <div class="stat-value" id="ghosts">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">BEST</div>
+        <div class="stat-value" id="best">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="board-wrap">
+
+    <canvas id="gameCanvas" width="800" height="520"></canvas>
+
+    <div class="overlay" id="overlay">
+      <div class="panel">
+        <h1>시간 도둑</h1>
+
+        <p>
+          당신의 과거가 적이 됩니다.
+        </p>
+
+        <p class="danger">
+          YOUR PAST BECOMES YOUR ENEMY.
+        </p>
+
+        <p>
+          파란 조각을 먹고 살아남으세요.<br>
+          오래 움직일수록 과거의 내가 늘어납니다.
+        </p>
+
+        <button id="startButton">게임 시작 / START</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="controls">
+    <b>WASD / ARROW KEYS</b> 로 이동 · 모바일은 화면을 터치하세요
+    <br>
+    BLUE ORBS = SCORE · PURPLE GHOSTS = YOUR PAST
+  </div>
+
+  <div class="footer">
+    <span>ONE FILE GAME</span>
+    <span>TIME THIEF</span>
+  </div>
+
+</div>
+
+
+<script>
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const scoreElement = document.getElementById("score");
+const timeElement = document.getElementById("time");
+const ghostsElement = document.getElementById("ghosts");
+const bestElement = document.getElementById("best");
+
+const overlay = document.getElementById("overlay");
+const startButton = document.getElementById("startButton");
+
+const WIDTH = canvas.width;
+const HEIGHT = canvas.height;
+
+let keys = {};
+
+let player;
+let orb;
+
+let trail = [];
+let ghosts = [];
+
+let score = 0;
+let best = 0;
+let gameTime = 0;
+
+let running = false;
+let lastTime = 0;
+
+let orbTimer = 0;
+let ghostTimer = 0;
+
+let touchTarget = null;
+
+
+/* =========================
+   UTILITY
+========================= */
+
+function random(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function distance(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+
+/* =========================
+   PLAYER
+========================= */
+
+function createPlayer() {
+  return {
+    x: WIDTH / 2,
+    y: HEIGHT / 2,
+    radius: 12
+  };
+}
+
+
+/* =========================
+   ORB
+========================= */
+
+function createOrb() {
+  return {
+    x: random(30, WIDTH - 30),
+    y: random(30, HEIGHT - 30),
+    radius: 7,
+    phase: random(0, Math.PI * 2)
+  };
+}
+
+
+/* =========================
+   GHOST
+========================= */
+
+function createGhost() {
+
+  /*
+    과거의 움직임을 복사한다.
+
+    최근 움직임이 아니라
+    일정 시간 이전의 움직임을 사용하기 때문에
+    "과거의 나"가 실제로 플레이어를 따라오는 것처럼 보인다.
+  */
+
+  const delay = Math.floor(
+    Math.min(
+      trail.length - 1,
+      170 + gameTime * 15
+    )
+  );
+
+  if (delay < 50) {
+    return;
+  }
+
+  const start =
+    Math.max(0, trail.length - delay - 260);
+
+  const end =
+    Math.max(0, trail.length - delay);
+
+  const path = trail.slice(start, end);
+
+  if (path.length < 20) {
+    return;
+  }
+
+  ghosts.push({
+    path: path,
+    index: 0,
+    x: path[0].x,
+    y: path[0].y,
+    radius: 11
+  });
+
+  /*
+    너무 많은 유령이 생기면
+    오래된 유령을 제거한다.
+  */
+
+  if (ghosts.length > 12) {
+    ghosts.shift();
+  }
+}
+
+
+/* =========================
+   START GAME
+========================= */
+
+function startGame() {
+
+  player = createPlayer();
+
+  orb = createOrb();
+
+  trail = [];
+  ghosts = [];
+
+  score = 0;
+  gameTime = 0;
+
+  orbTimer = 0;
+  ghostTimer = 0;
+
+  running = true;
+
+  overlay.classList.add("hidden");
+
+  lastTime = performance.now();
+
+  requestAnimationFrame(gameLoop);
+}
+
+
+/* =========================
+   GAME OVER
+========================= */
+
+function gameOver() {
+
+  running = false;
+
+  if (score > best) {
+    best = score;
+  }
+
+  bestElement.textContent = best;
+
+  overlay.innerHTML = `
+    <div class="panel">
+
+      <h1>GAME OVER</h1>
+
+      <p>
+        과거의 나에게 잡혔습니다.
+      </p>
+
+      <p class="danger">
+        YOUR PAST CAUGHT YOU.
+      </p>
+
+      <p>
+        SCORE: <b>${score}</b><br>
+        TIME: <b>${gameTime.toFixed(1)}s</b>
+      </p>
+
+      <button id="restartButton">
+        다시 시작 / RESTART
+      </button>
+
+    </div>
+  `;
+
+  overlay.classList.remove("hidden");
+
+  document
+    .getElementById("restartButton")
+    .addEventListener("click", startGame);
+}
+
+
+/* =========================
+   INPUT
+========================= */
+
+window.addEventListener("keydown", function(event) {
+
+  keys[event.key.toLowerCase()] = true;
+
+  if (
+    [
+      "arrowup",
+      "arrowdown",
+      "arrowleft",
+      "arrowright",
+      " "
+    ].includes(event.key.toLowerCase())
+  ) {
+    event.preventDefault();
+  }
+
+});
+
+
+window.addEventListener("keyup", function(event) {
+
+  keys[event.key.toLowerCase()] = false;
+
+});
+
+
+/* =========================
+   TOUCH
+========================= */
+
+canvas.addEventListener("pointerdown", function(event) {
+
+  const rect = canvas.getBoundingClientRect();
+
+  touchTarget = {
+    x: (event.clientX - rect.left)
+       * WIDTH / rect.width,
+
+    y: (event.clientY - rect.top)
+       * HEIGHT / rect.height
+  };
+
+  canvas.setPointerCapture(event.pointerId);
+
+});
+
+
+canvas.addEventListener("pointermove", function(event) {
+
+  if (!touchTarget) return;
+
+  const rect = canvas.getBoundingClientRect();
+
+  touchTarget = {
+    x: (event.clientX - rect.left)
+       * WIDTH / rect.width,
+
+    y: (event.clientY - rect.top)
+       * HEIGHT / rect.height
+  };
+
+});
+
+
+canvas.addEventListener("pointerup", function() {
+  touchTarget = null;
+});
+
+canvas.addEventListener("pointercancel", function() {
+  touchTarget = null;
+});
+
+
+/* =========================
+   UPDATE
+========================= */
+
+function update(deltaTime) {
+
+  gameTime += deltaTime;
+
+  orbTimer += deltaTime;
+  ghostTimer += deltaTime;
+
+
+  /*
+    MOVEMENT
+  */
+
+  let dx = 0;
+  let dy = 0;
+
+  if (keys["w"] || keys["arrowup"]) {
+    dy -= 1;
+  }
+
+  if (keys["s"] || keys["arrowdown"]) {
+    dy += 1;
+  }
+
+  if (keys["a"] || keys["arrowleft"]) {
+    dx -= 1;
+  }
+
+  if (keys["d"] || keys["arrowright"]) {
+    dx += 1;
+  }
+
+
+  /*
+    MOBILE MOVEMENT
+  */
+
+  if (touchTarget) {
+
+    dx = touchTarget.x - player.x;
+    dy = touchTarget.y - player.y;
+
+    const length = Math.hypot(dx, dy);
+
+    if (length > 15) {
+      dx /= length;
+      dy /= length;
+    } else {
+      dx = 0;
+      dy = 0;
+    }
+
+  }
+
+
+  /*
+    NORMALIZE
+  */
+
+  const length = Math.hypot(dx, dy);
+
+  if (length > 0) {
+
+    dx /= length;
+    dy /= length;
+
+    const speed =
+      200 + Math.min(gameTime * 2, 80);
+
+    player.x += dx * speed * deltaTime;
+    player.y += dy * speed * deltaTime;
+  }
+
+
+  /*
+    KEEP PLAYER INSIDE
+  */
+
+  player.x = Math.max(
+    player.radius,
+    Math.min(WIDTH - player.radius, player.x)
+  );
+
+  player.y = Math.max(
+    player.radius,
+    Math.min(HEIGHT - player.radius, player.y)
+  );
+
+
+  /*
+    SAVE PLAYER HISTORY
+  */
+
+  trail.push({
+    x: player.x,
+    y: player.y
+  });
+
+
+  /*
+    MEMORY LIMIT
+  */
+
+  if (trail.length > 2400) {
+    trail.shift();
+  }
+
+
+  /*
+    SPAWN NEW ORB
+  */
+
+  const orbInterval =
+    Math.max(1.7, 4.5 - gameTime * 0.04);
+
+  if (orbTimer > orbInterval) {
+
+    orbTimer = 0;
+
+    orb = createOrb();
+  }
+
+
+  /*
+    CREATE PAST SELF
+  */
+
+  const ghostInterval =
+    Math.max(2.2, 6.5 - gameTime * 0.09);
+
+  if (ghostTimer > ghostInterval) {
+
+    ghostTimer = 0;
+
+    createGhost();
+  }
+
+
+  /*
+    COLLECT ORB
+  */
+
+  if (
+    distance(player, orb) <
+    player.radius + orb.radius + 5
+  ) {
+
+    score++;
+
+    orb = createOrb();
+  }
+
+
+  /*
+    MOVE GHOSTS
+  */
+
+  for (const ghost of ghosts) {
+
+    if (ghost.index < ghost.path.length) {
+
+      const point =
+        ghost.path[ghost.index];
+
+      ghost.x = point.x;
+      ghost.y = point.y;
+
+      ghost.index++;
+
+    }
+
+  }
+
+
+  /*
+    COLLISION WITH GHOST
+  */
+
+  for (const ghost of ghosts) {
+
+    if (
+      distance(player, ghost) <
+      player.radius + ghost.radius - 3
+    ) {
+
+      gameOver();
+
+      return;
+    }
+
+  }
+
+
+  /*
+    UI
+  */
+
+  scoreElement.textContent = score;
+
+  timeElement.textContent =
+    gameTime.toFixed(1);
+
+  ghostsElement.textContent =
+    ghosts.length;
+
+}
+
+
+/* =========================
+   DRAW BACKGROUND
+========================= */
+
+function drawBackground() {
+
+  ctx.fillStyle = "#050810";
+
+  ctx.fillRect(
+    0,
+    0,
+    WIDTH,
+    HEIGHT
+  );
+
+
+  /*
+    GRID
+  */
+
+  ctx.strokeStyle =
+    "rgba(80,110,170,.10)";
+
+  ctx.lineWidth = 1;
+
+  const gridSize = 32;
+
+
+  for (
+    let x = 0;
+    x < WIDTH;
+    x += gridSize
+  ) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, HEIGHT);
+
+    ctx.stroke();
+  }
+
+
+  for (
+    let y = 0;
+    y < HEIGHT;
+    y += gridSize
+  ) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(0, y);
+    ctx.lineTo(WIDTH, y);
+
+    ctx.stroke();
+  }
+
+
+  /*
+    CENTER CROSS
+  */
+
+  ctx.strokeStyle =
+    "rgba(120,150,210,.06)";
+
+  ctx.beginPath();
+
+  ctx.moveTo(WIDTH / 2, 0);
+  ctx.lineTo(WIDTH / 2, HEIGHT);
+
+  ctx.moveTo(0, HEIGHT / 2);
+  ctx.lineTo(WIDTH, HEIGHT / 2);
+
+  ctx.stroke();
+}
+
+
+/* =========================
+   DRAW TRAIL
+========================= */
+
+function drawTrail() {
+
+  if (trail.length < 2) {
+    return;
+  }
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    trail[0].x,
+    trail[0].y
+  );
+
+
+  /*
+    일부 포인트만 연결해서
+    성능을 유지한다.
+  */
+
+  for (
+    let i = 1;
+    i < trail.length;
+    i += 5
+  ) {
+
+    ctx.lineTo(
+      trail[i].x,
+      trail[i].y
+    );
+
+  }
+
+  ctx.strokeStyle =
+    "rgba(100,140,210,.13)";
+
+  ctx.lineWidth = 2;
+
+  ctx.stroke();
+}
+
+
+/* =========================
+   DRAW ORB
+========================= */
+
+function drawOrb() {
+
+  const pulse =
+    1 + Math.sin(
+      orb.phase + gameTime * 5
+    ) * 0.2;
+
+
+  /*
+    GLOW
+  */
+
+  ctx.save();
+
+  ctx.shadowColor = "#4bd9ff";
+  ctx.shadowBlur = 25;
+
+  ctx.beginPath();
+
+  ctx.arc(
+    orb.x,
+    orb.y,
+    orb.radius * pulse,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fillStyle = "#55d9ff";
+
+  ctx.fill();
+
+  ctx.restore();
+
+
+  /*
+    CORE
+  */
+
+  ctx.beginPath();
+
+  ctx.arc(
+    orb.x,
+    orb.y,
+    2.5,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fillStyle = "#ffffff";
+
+  ctx.fill();
+}
+
+
+/* =========================
+   DRAW GHOSTS
+========================= */
+
+function drawGhosts() {
+
+  ghosts.forEach(function(ghost, index) {
+
+    const alpha =
+      Math.min(
+        0.75,
+        0.25 + index * 0.045
+      );
+
+
+    /*
+      GLOW
+    */
+
+    ctx.save();
+
+    ctx.globalAlpha = alpha;
+
+    ctx.shadowColor = "#a85cff";
+    ctx.shadowBlur = 18;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      ghost.x,
+      ghost.y,
+      ghost.radius,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle = "#a85cff";
+
+    ctx.fill();
+
+    ctx.restore();
+
+
+    /*
+      FACE
+    */
+
+    ctx.fillStyle = "#21102f";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      ghost.x - 3,
+      ghost.y - 2,
+      2,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.arc(
+      ghost.x + 3,
+      ghost.y - 2,
+      2,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+  });
+}
+
+
+/* =========================
+   DRAW PLAYER
+========================= */
+
+function drawPlayer() {
+
+  /*
+    OUTER GLOW
+  */
+
+  ctx.save();
+
+  ctx.shadowColor = "#ffe16b";
+  ctx.shadowBlur = 22;
+
+  ctx.beginPath();
+
+  ctx.arc(
+    player.x,
+    player.y,
+    player.radius,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fillStyle = "#ffe16b";
+
+  ctx.fill();
+
+  ctx.restore();
+
+
+  /*
+    FACE
+  */
+
+  ctx.fillStyle = "#443500";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    player.x - 3.5,
+    player.y - 2,
+    2,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.arc(
+    player.x + 3.5,
+    player.y - 2,
+    2,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fill();
+
+
+  /*
+    BODY HIGHLIGHT
+  */
+
+  ctx.beginPath();
+
+  ctx.arc(
+    player.x - 3,
+    player.y - 4,
+    2,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fillStyle = "#fff8c7";
+
+  ctx.fill();
+}
+
+
+/* =========================
+   DRAW
+========================= */
+
+function draw() {
+
+  drawBackground();
+
+  drawTrail();
+
+  drawOrb();
+
+  drawGhosts();
+
+  drawPlayer();
+}
+
+
+/* =========================
+   GAME LOOP
+========================= */
+
+function gameLoop(currentTime) {
+
+  if (!running) {
+    return;
+  }
+
+
+  const deltaTime =
+    Math.min(
+      0.033,
+      (currentTime - lastTime) / 1000
+    );
+
+
+  lastTime = currentTime;
+
+
+  update(deltaTime);
+
+  draw();
+
+
+  if (running) {
+    requestAnimationFrame(gameLoop);
+  }
+}
+
+
+/* =========================
+   INITIAL SCREEN
+========================= */
+
+player = createPlayer();
+
+orb = createOrb();
+
+draw();
+
+
+/* =========================
+   START BUTTON
+========================= */
+
+startButton.addEventListener(
+  "click",
+  startGame
+);
+
+</script>
+
+</body>
+</html>

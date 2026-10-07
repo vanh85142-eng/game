@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>기억 미로</title>
+<style>
+body{margin:0;background:#080b12;color:white;font-family:Arial;text-align:center}
+#maze{display:grid;grid-template-columns:repeat(10,35px);gap:2px;justify-content:center;margin:20px}
+.cell{width:35px;height:35px;background:#20283b;border-radius:3px}
+.wall{background:#050608}
+.path{background:#69e0ff}
+.player{background:#ffe05e}
+.goal{background:#70ff91}
+button{padding:12px 25px;border:0;border-radius:9px;background:#ffe05e;font-weight:bold}
+</style>
+</head>
+<body>
+<h1>기억 미로 · MEMORY MAZE</h1>
+<p id="info">미로를 2초 동안 기억하세요.</p>
+<div id="maze"></div>
+<button onclick="newGame()">NEW MAZE</button>
+<script>
+const M=10,maze=document.getElementById("maze");
+let map=[],px=0,py=0,started=0,dead=0;
+function newGame(){
+ map=[];
+ for(let y=0;y<M;y++){
+  let r=[];
+  for(let x=0;x<M;x++){
+   r.push(Math.random()<.28?1:0)
+  }
+  map.push(r)
+ }
+ map[0][0]=0;map[9][9]=0;
+ px=0;py=0;dead=0;started=0;
+ draw(true);
+ setTimeout(()=>{started=1;draw(false)},2000)
+}
+function draw(show){
+ maze.innerHTML="";
+ for(let y=0;y<M;y++)for(let x=0;x<M;x++){
+  let d=document.createElement("div");d.className="cell";
+  if(map[y][x]&&!show)d.classList.add("wall");
+  if(show&&!map[y][x])d.classList.add("path");
+  if(x===px&&y===py)d.classList.add("player");
+  if(x===9&&y===9)d.classList.add("goal");
+  maze.appendChild(d)
+ }
+}
+function move(dx,dy){
+ if(!started||dead)return;
+ let nx=px+dx,ny=py+dy;
+ if(nx<0||nx>=M||ny<0||ny>=M)return;
+ if(map[ny][nx]){dead=1;alert("GAME OVER\n벽을 기억하지 못했습니다.");return}
+ px=nx;py=ny;draw(false);
+ if(px===9&&py===9){dead=1;alert("YOU WIN!\n미로를 기억했습니다.")}
+}
+onkeydown=e=>{
+ if(e.key==="ArrowUp"||e.key==="w")move(0,-1);
+ if(e.key==="ArrowDown"||e.key==="s")move(0,1);
+ if(e.key==="ArrowLeft"||e.key==="a")move(-1,0);
+ if(e.key==="ArrowRight"||e.key==="d")move(1,0);
+};
+newGame();
+</script>
+</body>
+</html>
